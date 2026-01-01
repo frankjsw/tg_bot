@@ -1,0 +1,9 @@
+app:
+  name: my-telegram-bot          # 自定义你的应用名称
+  runtime: python3.9            # Python 版本
+  build:
+    install:
+      - pip install -r requirements.txt  # 安装依赖
+  command: python bot.py              # 启动命令
+  env:
+    BOT_API_TOKEN: ${BOT_API_TOKEN}   # 设置环境变量，引用环境变量中的 API Token
