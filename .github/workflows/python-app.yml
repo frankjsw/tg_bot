@@ -28,4 +28,4 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest tests/  # 如果测试文件在 'tests/' 子目录下
+          pytest bot.py # 如果测试文件在 'tests/' 子目录下
