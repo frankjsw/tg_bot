@@ -77,10 +77,10 @@ async def track_and_echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         del message_tracker[chat_id][message_key]
         logger.info(f"在群组 {chat_id} 触发了复读: {message_key}")
 
-async def cleanup_old_records():
+async def cleanup_old_records(app: Application):
     """定时清理过期的记录"""
     while True:
-        await asyncio.sleep(TIME_WINDOW)
+        await asyncio.sleep(TIME_WINDOW)  # 每隔一个时间窗口检查一次
         now = datetime.now()
         for chat_id in list(message_tracker.keys()):
             keys_to_delete = []
@@ -89,6 +89,12 @@ async def cleanup_old_records():
                     keys_to_delete.append(msg_key)
             for key in keys_to_delete:
                 del message_tracker[chat_id][key]
+
+async def post_init(app: Application):
+    """在机器人启动后，启动后台清理任务"""
+    # 创建并启动清理任务，但不等待它完成
+    app.create_task(cleanup_old_records(app))
+    logger.info("后台消息记录清理任务已启动。")
 
 def main() -> None:
     """启动机器人"""
@@ -105,10 +111,10 @@ def main() -> None:
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, track_and_echo))
     
-    # 启动清理任务
-    asyncio.create_task(cleanup_old_records())
+    # 设置机器人启动后的初始化操作
+    application.post_init = post_init
     
-    # 启动机器人
+    # 启动机器人（这会自动运行事件循环）
     logger.info("机器人开始轮询...")
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
